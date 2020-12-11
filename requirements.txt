@@ -1,2 +1,2 @@
-wykop-sdk-reborn>=0.2.1
+wykop-sdk-reborn>=0.2.3
 markovify>=0.8.3
