@@ -48,9 +48,9 @@ def get_messages(tag, pages=100, download_comments=False) -> Tuple[str, int]:
     last_id = -1
     for i in range(1, pages+1):
         print(f'{datetime.datetime.now()}: Strona: {i}/{pages} tagu #{tag}')
-        x = api.tag(tag, page=i)
+        x = api.tag_entries(tag, page=i)
         if i == 1:
-            last_id = int([entry for entry in x if entry.type == 'entry'][0]['entry']['id'])
+            last_id = int(x[0]['id'])
         m = [get_texts_from_entry_and_comments(entry.entry) if download_comments else entry.entry.body for entry in x if
              entry.type == 'entry']
         messages += m
