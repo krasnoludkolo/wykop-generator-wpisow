@@ -22,8 +22,8 @@ def generate_message(model):
 
 
 def main():
-    tag = "polityka"
-    # download(tag)
+    tag = "grybezpradu"
+    download(tag)
 
     state_size = 3
 
