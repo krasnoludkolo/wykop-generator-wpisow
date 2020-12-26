@@ -1,3 +1,5 @@
+import logging
+
 import markovify
 
 from download import download
@@ -22,20 +24,24 @@ def generate_message(model):
 
 
 def main():
-    tag = "grybezpradu"
-    download(tag)
-
+    logging.basicConfig(level=logging.INFO)
+    tag = "polityka"
+    # download(tag)
     state_size = 3
 
-    model = markovify.Text(load(tag), state_size=state_size)
 
-    op = model.make_sentence(tries=500, max_overlap_ratio=0.5)
+    model = markovify.Text(load(tag), state_size=state_size)
+    #
+    # op = model.make_sentence(tries=500, max_overlap_ratio=0.5)
     # start = random.randint(0, len(op.split()) - state_size)
     # start_state = " ".join(op.split()[start:start + state_size])
     # print(start_state)
     # comment = model.make_sentence(init_state=start_state, tries=500, max_overlap_ratio=0.5)
-    print(op)
-    # print()
+
+    print(model.make_short_sentence(max_chars=1000, min_chars=100))
+    a = generate_message(model)
+    print(a)
+    print(len(a))
     # print(comment)
 
 

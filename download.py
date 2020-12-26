@@ -2,16 +2,15 @@ import datetime
 import os
 import re
 import time
+import logging
 
 from typing import NoReturn, Tuple
 from wykop import WykopAPI
 
 key = os.environ.get('WYKOP_TAKTYK_KEY')
 secret = os.environ.get('WYKOP_TAKTYK_SECRET')
-account_key = os.environ.get('WYKOP_TAKTYK_ACCOUNTKEY')
 
-api = WykopAPI(key, secret, output='clear', account_key=account_key)
-api.authenticate()
+api = WykopAPI(key, secret, output='clear')
 
 
 def remove_tags(text) -> str:
@@ -43,33 +42,31 @@ def get_texts_from_entry_and_comments(entry) -> str:
     return '\n'.join(texts)
 
 
-def get_messages(tag, pages=100, download_comments=False) -> Tuple[str, int]:
+def get_messages(tag, download_comments=False, page=1) -> str:
     messages = []
-    last_id = -1
-    for i in range(1, pages+1):
-        print(f'{datetime.datetime.now()}: Strona: {i}/{pages} tagu #{tag}')
-        x = api.tag_entries(tag, page=i)
-        if i == 1:
-            last_id = int(x[0]['id'])
-        m = [get_texts_from_entry_and_comments(entry.entry) if download_comments else entry.entry.body for entry in x if
-             entry.type == 'entry']
-        messages += m
-        time.sleep(0.3)
-    return '\n'.join(messages), last_id
+    logging.info(f'{datetime.datetime.now()}: Strona: {page} tagu #{tag}')
+    x = api.search_entries(query=f'#{tag}', page=page, when='month')
+    m = [get_texts_from_entry_and_comments(entry) if download_comments else entry.body for entry in x]
+    messages += m
+    time.sleep(0.3)
+    result = '\n'.join(messages)
+    if x:
+        logging.info(x[0]['date'])
+        result += '\n' + get_messages(tag, download_comments, page + 1)
+    return result
 
 
-def save(text, tag, last_id) -> NoReturn:
+def save(text, tag) -> NoReturn:
     open(f'{tag}.txt', 'w', encoding="utf-8").write(text)
-    open(f'{tag}_last_id.txt', 'w', encoding="utf-8").write(str(last_id))
 
 
 def download(tag):
-    messages, last_id = get_messages(tag, 10)
+    messages = get_messages(tag)
     messages = remove_tags(messages)
     messages = remove_nicknames(messages)
     messages = remove_empty_lines_and_format(messages)
     text = filter_to_short(messages, min_words=5)
-    save(text, tag, last_id)
+    save(text, tag)
 
 
 def main():
@@ -77,5 +74,5 @@ def main():
     download(tag)
 
 
-if __name__ == 'main':
+if __name__ == '__main__':
     main()
